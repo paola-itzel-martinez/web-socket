@@ -1,35 +1,47 @@
-const socket = io()
 
-const labelStatus = document.querySelector("#labelStatus")
-const inputMessage = document.querySelector("#inputMessage")
-const btnSend = document.querySelector("#btnSend")
+// Referencias del HTML
+const lblOnline  = document.querySelector('#lblOnline');
+const lblOffline = document.querySelector('#lblOffline');
+const txtMensaje = document.querySelector('#txtMensaje');
+const btnEnviar  = document.querySelector('#btnEnviar');
 
 
-socket.on("connect", () => {
-    labelStatus.classList.add('text-success')
-    labelStatus.classList.remove('text-danger')
-    labelStatus.innerText = 'Online'
+const socket = io();
+
+
+
+socket.on('connect', () => {
+    // console.log('Conectado');
+
+    lblOffline.style.display = 'none';
+    lblOnline.style.display  = '';
+
+});
+
+socket.on('disconnect', () => {
+    // console.log('Desconectado del servidor');
+
+    lblOnline.style.display  = 'none';
+    lblOffline.style.display = '';
+});
+
+
+socket.on('enviar-mensaje', (payload) => {
+    console.log( payload )
 })
 
-socket.on("send-message", (payload) => {
-    console.log(payload)
-})
 
-socket.on("disconnect", () => {
-    labelStatus.classList.remove('text-success')
-    labelStatus.classList.add('text-danger')
-    labelStatus.innerText = 'Offline'
-})
+btnEnviar.addEventListener( 'click', () => {
 
-btnSend.addEventListener("click", () => {
+    const mensaje = txtMensaje.value;
     const payload = {
-        id: '123',
-        message: inputMessage.value,
-        date: new Date().getTime()
+        mensaje,
+        id: '123ABC',
+        fecha: new Date().getTime()
     }
+    
+    socket.emit( 'enviar-mensaje', payload, ( id ) => {
+        console.log('Desde el server', id );
+    });
 
-    socket.emit("send-message", payload, ({ id, date }) => {
-        console.log('id', id)
-        console.log('date', date)
-    })
-})
+});
